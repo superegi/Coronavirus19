@@ -12,8 +12,8 @@ Seguimiento =  pd.read_pickle('./Seguimiento.pkl')
 
 # seteo el rango de fechas de interés en las
 # notificaciones de epivigila
-fecha1 = pd.to_datetime('2021-02-05')
-fecha2 = pd.to_datetime('2021-02-12')
+fecha1 = pd.to_datetime('2021-02-22')
+fecha2 = pd.to_datetime('2021-02-28')
 
 # y hago el subset
 #Epi = EpiV.loc[(EpiV.fecha_notificacion > fecha1) & 

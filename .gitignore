@@ -1,6 +1,13 @@
-.ipynb_checkpoints 
+
+#Bases de datos
+*.pkl
+*.csv
 *.xls
 *.xlsx
+*.bz2
+
+
+.ipynb_checkpoints 
 *.aux
 *.out
 *.toc
@@ -9,8 +16,10 @@
 *.aux
 
 
-
-Reporte c19 UGCC/
+__pycache__/
+*.spyproject
+*.zip
+*.rar
 
 CR-Coronavirus SSVQ/
 
@@ -44,12 +53,13 @@ Covid-BD/
 *.out
 
 # BibTeX
-*.bbl
-*.blg
+#*.bbl
+#*.blg
 
 # Sublime Text Project Files (usually contain absolute paths)
 *.sublime-project
 *.sublime-workspace
+
 Resultado test/rutificador/PadronElectoralChile2020.tar.gz
 
 Resultado test/rutificador/PadronElectoralChile2020.txt

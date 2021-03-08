@@ -7,6 +7,15 @@ import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 import matplotlib.cm as cm
 import os
+import time 
+
+#from funciones import *
+exec(open('./funciones.py').read())
+
+
+from pandarallel import pandarallel
+pandarallel.initialize(progress_bar=True)
+
 
 # listo los archivos disponibles que he bajado
 lista_archivos = []
@@ -17,48 +26,47 @@ archivos = lista_archivos
 print(archivos)
 archivos
 
-current = '../BDs/DEIS fallecidos 20200922 Chile.xlsx'
-   
+current = '../BDs/DEIS fallecidos 20201104 Chile.xlsx'
+
+pcolor('Leyendo BD')   
 BD_deis = pd.read_excel(current,
                         dtype= str
                        )
+pcolor('BD leida')   
 
-def agregador_cero(valor):
-    if pd.to_numeric(valor) <10:
-        return str('0' + str(valor))
-    else:
-        return str(valor)
-
-BD_deis.ANO2_NAC = BD_deis.ANO2_NAC.apply(agregador_cero)
+pcolor('agregando cero')   
+BD_deis.ANO2_NAC = BD_deis.ANO2_NAC.parallel_apply(agregador_cero)
 
 # Nacimiento
+pcolor('Agregando : FN')   
+
 dum= BD_deis.ANO1_NAC.apply(str) + BD_deis.ANO2_NAC.apply(str) + '-' + BD_deis.MES_NAC.apply(str)+'-'	+ BD_deis.DIA_NAC.apply(str)
+
+
 BD_deis['TS_nacimiento'] = pd.to_datetime(dum, format='%Y-%m-%d', errors='coerce')
 BD_deis['TS_nacimiento'].isna().value_counts()
 
 # Muerte
+pcolor('Agregando : muerte')   
+
 dum=  BD_deis.ANO_DEF.apply(str) + '-' +BD_deis.MES_DEF.apply(str) + '-' +BD_deis.DIA_DEF.apply(str)
+
+
 BD_deis['TS_muerte'] = pd.to_datetime(dum, format='%Y-%m-%d', errors='coerce')
 BD_deis['TS_muerte']
 print(BD_deis['TS_muerte'].isna().value_counts())
 
 # Edad
+pcolor('Agregando : edad')   
+
 BD_deis['Edad_dias'] =  BD_deis['TS_muerte'] - BD_deis['TS_nacimiento']
 BD_deis['Edad'] = round((BD_deis.Edad_dias.dt.days / 365), 0)
 
-from itertools import cycle
 
-# RUT
-def digito_verificador(rut):
-    reversed_digits = map(int, reversed(str(rut)))
-    factors = cycle(range(2, 8))
-    s = sum(d * f for d, f in zip(reversed_digits, factors))
-    if (-s) % 11 == 10:
-        return 'K'
-    else:
-        return (-s) % 11
+pcolor('Agregando : DV')   
 
-BD_deis['RUT'] = BD_deis.RUN.apply(lambda x : str(x) + '-' + str(digito_verificador(x)))
+#BD_deis['RUT'] = BD_deis.RUN.apply(lambda x : str(x) + '-' + str(digito_verificador(x)))
+BD_deis['RUT'] = BD_deis.RUN.parallel_apply(lambda x : str(x) + '-' + str(digito_verificador(x)))
 
 # Genero los nombres por separado
 def nombre_nombre(x):
@@ -73,9 +81,9 @@ def nombre_apellido2(x):
     res = x.split('/')
     return res[1]
 
-BD_deis['Nombre1'] = BD_deis.NOMBRE_LIMPIO.apply(nombre_nombre)
-BD_deis['Apellido1'] = BD_deis.NOMBRE_LIMPIO.apply(nombre_apellido1)
-BD_deis['Apellido2'] = BD_deis.NOMBRE_LIMPIO.apply(nombre_apellido2)
+BD_deis['Nombre1'] =     BD_deis.NOMBRE_LIMPIO.parallel_apply(nombre_nombre)
+BD_deis['Apellido1'] =   BD_deis.NOMBRE_LIMPIO.parallel_apply(nombre_apellido1)
+BD_deis['Apellido2'] =   BD_deis.NOMBRE_LIMPIO.parallel_apply(nombre_apellido2)
 BD_deis['Nombre_full'] = BD_deis['Nombre1'] + ' ' \
 + BD_deis['Apellido1'] + ' ' + BD_deis['Apellido2']
 
@@ -89,7 +97,18 @@ BD_deis.SEXO.replace(
     inplace=True
 )
 
-# Lugar de Muerte
+# Corrijo la @ como Ñ
+BD_deis.GLOS_CIRCU = BD_deis.GLOS_CIRCU.str.replace('@', 'Ñ')
+BD_deis.DEF_DOM_CO = BD_deis.DEF_DOM_CO.str.replace('@', 'Ñ')
+
+
+# Si tuvo atención médica e su muerte
+BD_deis.AT_MEDICA = BD_deis.AT_MEDICA.replace('0', 'No')
+BD_deis.AT_MEDICA = BD_deis.AT_MEDICA.replace('1', 'Si')
+BD_deis.AT_MEDICA = BD_deis.AT_MEDICA.replace('9', np.nan)
+
+
+# Tipo Lugar de Muerte
 BD_deis.LOCAL_DEF.value_counts()
 BD_deis.LOCAL_DEF.replace(
     {
@@ -106,10 +125,10 @@ columnas = BD_deis.columns
 glosas = [s for s in columnas if "GLOSA" in s]
 glosas
 
-asepciones = ['covid', 'cavid', 'covi', 'covd',
+asepciones = ['covid', 'covi', 'covd',
               'civid', 'civd', 'navirus',
               'codiv',
-              '19']
+              'c19']
 
 for cols in glosas:
     BD_deis[cols] = BD_deis[cols].str.strip()
@@ -125,11 +144,11 @@ for cols in glosas:
         (BD_deis[cols].str.contains('sars', case=False)),
          'Covid'] = 'Coronavirus'
     BD_deis.loc[
-        (BD_deis[cols].str.contains('cov', case=False)) &
-        (BD_deis[cols].str.contains('2', case=False)),
+        (BD_deis[cols].str.contains('cavid', case=False)) &
+        (BD_deis[cols].str.contains('19', case=False)),
          'Covid'] = 'Coronavirus'
     BD_deis.loc[
-        (BD_deis[cols].str.contains('c', case=False)) &
+        (BD_deis[cols].str.contains('cov', case=False)) &
         (BD_deis[cols].str.contains('19', case=False)),
          'Covid'] = 'Coronavirus'
 
@@ -142,12 +161,14 @@ BD_deis.Covid.value_counts()
 muertos = BD_deis[['Nombre1', 'Apellido1', 'Apellido2', 'Nombre_full',
                    'RUT', 'SEXO',
                    'Edad', 'Edad_dias', 'TS_muerte', 'TS_nacimiento',
-                   'LOCAL_DEF', 'DEF_DOM_CO', 'LUGAR_DEF',
+                   'LOCAL_DEF', 'AT_MEDICA',  'GLOS_CIRCU', 'DEF_DOM_CO', 'LUGAR_DEF',
                    'Covid',  'GLOSA1', 'GLOSA2', 'GLOSA3', 'GLOSA4',
                    'REG_RES',	'SERV_RES']].copy()
 muertos.rename(columns = {
         'LOCAL_DEF':    'Tipo_lugar_muerte',
-        'DEF_DOM_CO':   'Comuna_muerte',
+        'AT_MEDICA':    'Atencion_medica',
+        'GLOS_CIRCU':   'Comuna_inscripcion',
+        'DEF_DOM_CO':   'Comuna_domicilio',
         'LUGAR_DEF':    'Lugar_muerte',
         'REG_RES':      'RegionNum_muerte',
 #        'REGION':       'Region_muerte',
@@ -162,4 +183,6 @@ muertos.to_excel('../Muertos_DEIS.xlsx')
 os.system('play -nq -t alsa synth 1 sine 440')
 
 #grafico 
-muertos.groupby([pd.Grouper(key='TS_muerte', freq='W'), 'Covid']).Nombre1.count().unstack().plot()
+muertos.groupby(
+        [pd.Grouper(key='TS_muerte', freq='W'), 'Covid']
+        ).Nombre1.count().unstack().plot()
