@@ -63,8 +63,6 @@ class Compilador:
             "hora_informada_resultado_laboratorio",
         )
 
-        self.df["TS_nacimiento_pac"] = self.df["fecha_nacimiento_paciente"]
-
     def a_TS(self):
         print(self.TS, ": ", "Transformo texto a TS (timestamp)")
         cols_BD = [f for f in list(self.df.columns) if "TS_" in f]
@@ -75,12 +73,16 @@ class Compilador:
             )
         # Se le quita la zona horaria a la columna 'TS_fecha_creacion
 
-    def fechaCreacion_TS(self):
+    def otros_TS(self):
         self.df["TS_fecha_creacion"] = self.df["fecha_creacion"]
         self.df["TS_fecha_creacion"] = pd.to_datetime(
             self.df["TS_fecha_creacion"], errors="coerce", dayfirst=True
         )
         self.df["TS_fecha_creacion"] = self.df["TS_fecha_creacion"].dt.tz_localize(None)
+
+        self.df["TS_nacimiento_pac"] = pd.to_datetime(
+            self.df["fecha_nacimiento_paciente"], dayfirst=True, errors="coerce"
+        )
 
     def nuevasColumnas_DT(self):
         print(self.TS, ": ", "Creo DT (deltatime)")
@@ -167,7 +169,12 @@ class Compilador:
             "tiposolicitud",
             "codigo_muestra_cliente",
         ]
-        self.df = self.df[columnas]
+
+        if any([e for e in self.df.columns if "NombreBD" in e]):
+            x = list(columnas) + list(["NombreBD"])
+            self.df = self.df[x]
+        else:
+            self.df = self.df[columnas]
 
     def normalizador_nombresColumnas(self):
         normalizacion_cols = dict(

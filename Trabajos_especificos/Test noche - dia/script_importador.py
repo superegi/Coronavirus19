@@ -125,7 +125,7 @@ class Buscayagrega:
 
         print(self.archivos_raw)  # los listo
 
-    def compilador_basedatos(self):
+    def compilador_basedatos(self, nombreBD=False):
         # ==================================================
         # Compilo las bases de datos
         # ==================================================
@@ -133,6 +133,8 @@ class Buscayagrega:
         for f in self.archivos_raw:
             print("leyendo:", f)
             data = pd.read_excel(f, dtype=str)
+            if nombreBD:
+                data["NombreBD"] = f
             self.dataset = self.dataset.append(data)
 
         print("Base de datos resultado:")
