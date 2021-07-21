@@ -3,6 +3,7 @@
 *.pkl
 *.csv
 *.xls
+*.ods
 *.xlsx
 *.bz2
 
@@ -15,6 +16,7 @@
 *.bbl
 *.aux
 
+*.~lock
 
 __pycache__/
 *.spyproject
