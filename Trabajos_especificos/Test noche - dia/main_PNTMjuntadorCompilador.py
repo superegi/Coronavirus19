@@ -37,7 +37,7 @@ compilador.nuevasColumnas_DT()
 compilador.dropearRepetidas()
 compilador.reordenarColumnas()
 compilador.normalizador_nombresColumnas()
-print(compilador.df)
+print(compilador.BD)
 
 # acá se eliminan repetidos. Dado que los archivos de la
 # PNTM es en rango de fechas.... pasa que hay muchos valores
@@ -45,11 +45,11 @@ print(compilador.df)
 
 
 # elimino los repetidos, dejo el más nuevo
-compilador.df.sort_values(by="NombreBD", ascending=True, inplace=True)
-compilador.df.drop_duplicates(subset="idMuestra", keep="last", inplace=True)
+compilador.BD.sort_values(by="NombreBD", ascending=True, inplace=True)
+compilador.BD.drop_duplicates(subset="idMuestra", keep="last", inplace=True)
 
 
 # exporto el resultado
-compilador.guardo_xls("p_normalizada.xlsx")
+compilador.guardo_xls("PNTM_normalizada.xlsx")
 compilador.guardo_pickle("PNTM_merged_formated.pkl")
 print("Fin del script")

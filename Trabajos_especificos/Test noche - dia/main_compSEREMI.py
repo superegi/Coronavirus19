@@ -17,5 +17,9 @@ CS.arreglo_edad()
 
 CS.elimino_columnas()
 CS.elimino_columnas2()
-CS.BD.head(1000).to_excel("Seremiejemplo.xlsx")
-CS.BD.to_pickle("SEREMI_compilado.pkl")
+
+CS.guardo_xls('Seremi_compilado.xlsx')
+CS.guardo_xls_ejemplo('Seremi_compiladoEJEMPLO.xlsx')
+CS.guardo_pkl('SEREMI_compilado.pkl')
+
+print('Fin!')

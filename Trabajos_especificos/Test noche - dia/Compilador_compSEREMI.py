@@ -7,6 +7,7 @@ Este es un archivo temporal.
 
 import pandas as pd
 import numpy as np
+import datetime as dt
 import os
 
 from itertools import cycle
@@ -23,6 +24,10 @@ class Compilador_compiladoSEREMI:
         print("corrijo_rut")
         print("corrijo fechas")
         print("guardo")
+		
+        # genero una marca de tiempo
+        self.TS = dt.datetime.now().strftime("%m-%d %H:%M:%S")
+
 
         # Archivos a leer
         self.BD = pd.DataFrame()
@@ -59,8 +64,10 @@ class Compilador_compiladoSEREMI:
         self.BD.loc[a == True, "RUT"] = RUUUUTT
 
     def corrijo_rut(self):
+        print(self.TS, ": ", "Corrijo RUTs")
         self.BD["Verificador_RUT"] = self.BD.RUN.apply(lambda x: self.verifico_RUT(x))
         self.agrego_palitoRUT()
+        print(self.TS, ": ", "finalizado corrección RUTs")
 
     # no usado aca........
     def corrijo_resultadotest(self):
@@ -169,3 +176,40 @@ class Compilador_compiladoSEREMI:
     def elimino_columnas2(self):
         lista = ["RUN", "Resultado", "Edad", "Sexo"]
         self.BD.drop(lista, axis=1, inplace=True)
+        
+    def guardo_xls(self, ruta ):
+        print(self.TS, ": ", "Guardando BD como excel")
+        self.BD.to_excel(ruta)
+        print(self.TS, ": ", "Guardado BD!")
+        
+    def guardo_xls_ejemplo(self, ruta):
+        print(self.TS, ": ", "Guardando BD como excel")
+        self.BD.head(1000).to_excel(ruta)
+        print(self.TS, ": ", "Guardado BD!")
+
+    def guardo_pkl(self, ruta):
+        print(self.TS, ": ", "Guardando BD como pickle")
+        self.BD.to_pickle(ruta)
+        print(self.TS, ": ", "Guardado BD!")
+
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        

@@ -22,20 +22,20 @@ class Compilador:
         print(self.TS, ": ", "*  -guardarExcel                 *")
         print(self.TS, ": ", "*  -guardarPickle                *")
         # Archivos a leer
-        self.df = pd.DataFrame()
+        self.BD = pd.DataFrame()
 
     def cargadorBD(self, database):
         print(self.TS, ": ", "Cargando BD")
-        self.df = database
+        self.BD = database
         print(self.TS, ": ", "BD Cargada")
 
     def junta_nombre(self):
-        self.df["nombrePaciente"] = (
-            self.df.nombre_paciente
+        self.BD["nombrePaciente"] = (
+            self.BD.nombre_paciente
             + " "
-            + self.df.apellido_paterno_paciente
+            + self.BD.apellido_paterno_paciente
             + " "
-            + self.df.apellido_materno_paciente
+            + self.BD.apellido_materno_paciente
         )
 
     def nuevasColumnas_TS(self):
@@ -45,43 +45,43 @@ class Compilador:
             resultado = DF[x] + " " + DF[y]
             return resultado
 
-        self.df["TS_toma"] = juntador(self.df, "fecha_toma_muestra", "hora_muestra")
-        self.df["TS_recepcion"] = juntador(
-            self.df, "fecha_recepcion_muestra", "hora_recepcion"
+        self.BD["TS_toma"] = juntador(self.BD, "fecha_toma_muestra", "hora_muestra")
+        self.BD["TS_recepcion"] = juntador(
+            self.BD, "fecha_recepcion_muestra", "hora_recepcion"
         )
-        self.df["TS_resultado"] = juntador(
-            self.df, "fecha_resultado_muestra", "hora_resultado"
+        self.BD["TS_resultado"] = juntador(
+            self.BD, "fecha_resultado_muestra", "hora_resultado"
         )
-        self.df["TS_recepcion_i"] = juntador(
-            self.df,
+        self.BD["TS_recepcion_i"] = juntador(
+            self.BD,
             "fecha_informada_recepcion_laboratorio",
             "hora_informada_recepcion_laboratorio",
         )
-        self.df["TS_resultado_i"] = juntador(
-            self.df,
+        self.BD["TS_resultado_i"] = juntador(
+            self.BD,
             "fecha_informada_resultado_laboratorio",
             "hora_informada_resultado_laboratorio",
         )
 
     def a_TS(self):
         print(self.TS, ": ", "Transformo texto a TS (timestamp)")
-        cols_BD = [f for f in list(self.df.columns) if "TS_" in f]
+        cols_BD = [f for f in list(self.BD.columns) if "TS_" in f]
         for i in cols_BD:
             print("Transformando: ", i)
-            self.df[i] = pd.to_datetime(
-                self.df[i], errors="coerce", format="%d-%m-%Y %H:%M:%S"
+            self.BD[i] = pd.to_datetime(
+                self.BD[i], errors="coerce", format="%d-%m-%Y %H:%M:%S"
             )
         # Se le quita la zona horaria a la columna 'TS_fecha_creacion
 
     def otros_TS(self):
-        self.df["TS_fecha_creacion"] = self.df["fecha_creacion"]
-        self.df["TS_fecha_creacion"] = pd.to_datetime(
-            self.df["TS_fecha_creacion"], errors="coerce", dayfirst=True
+        self.BD["TS_fecha_creacion"] = self.BD["fecha_creacion"]
+        self.BD["TS_fecha_creacion"] = pd.to_datetime(
+            self.BD["TS_fecha_creacion"], errors="coerce", dayfirst=True
         )
-        self.df["TS_fecha_creacion"] = self.df["TS_fecha_creacion"].dt.tz_localize(None)
+        self.BD["TS_fecha_creacion"] = self.BD["TS_fecha_creacion"].dt.tz_localize(None)
 
-        self.df["TS_nacimiento_pac"] = pd.to_datetime(
-            self.df["fecha_nacimiento_paciente"], dayfirst=True, errors="coerce"
+        self.BD["TS_nacimiento_pac"] = pd.to_datetime(
+            self.BD["fecha_nacimiento_paciente"], dayfirst=True, errors="coerce"
         )
 
     def nuevasColumnas_DT(self):
@@ -91,15 +91,15 @@ class Compilador:
             resultado = DF[x] - DF[y]
             return resultado
 
-        self.df["DT_llegaMuestra"] = restador(self.df, "TS_recepcion", "TS_toma")
-        self.df["DT_procesaMuestra"] = restador(self.df, "TS_resultado", "TS_recepcion")
-        self.df["DT_procesaMuestra_i"] = restador(
-            self.df, "TS_resultado_i", "TS_recepcion_i"
+        self.BD["DT_llegaMuestra"] = restador(self.BD, "TS_recepcion", "TS_toma")
+        self.BD["DT_procesaMuestra"] = restador(self.BD, "TS_resultado", "TS_recepcion")
+        self.BD["DT_procesaMuestra_i"] = restador(
+            self.BD, "TS_resultado_i", "TS_recepcion_i"
         )
 
     def dropearRepetidas(self):
         print(self.TS, ": ", "Elimino columnas inutiles")
-        self.df.drop(
+        self.BD.drop(
             columns=[
                 "nombre_profesional",
                 "rut_profesional",
@@ -170,11 +170,11 @@ class Compilador:
             "codigo_muestra_cliente",
         ]
 
-        if any([e for e in self.df.columns if "NombreBD" in e]):
+        if any([e for e in self.BD.columns if "NombreBD" in e]):
             x = list(columnas) + list(["NombreBD"])
-            self.df = self.df[x]
+            self.BD = self.BD[x]
         else:
-            self.df = self.df[columnas]
+            self.BD = self.BD[columnas]
 
     def normalizador_nombresColumnas(self):
         normalizacion_cols = dict(
@@ -216,18 +216,17 @@ class Compilador:
                 "codigo_servicio_salud_establecimiento": "codssEstablecimiento",
                 "servicio_salud_establecimiento": "ssEstablecimiento",
                 "epivigila": "epivigilia",
-                "codigo_muestra_cliente": "codmuestraCliente",
             }
         )
         # Reasigno nombres
-        self.df = self.df.rename(columns=normalizacion_cols)
+        self.BD = self.BD.rename(columns=normalizacion_cols)
 
     def guardo_xls(self, ruta):
         print(self.TS, ": ", "Guardando archivo Excel")
-        self.df.to_excel(ruta)
-        ("Guardado!")
+        self.BD.to_excel(ruta)
+        print(self.TS, ": ", "Guardado! Excel")
 
     def guardo_pickle(self, ruta):
         print(self.TS, ": ", "Guardando archivo pickle")
-        self.df.to_pickle(ruta)
+        self.BD.to_pickle(ruta)
         print(self.TS, ": ", "Guardado!")
