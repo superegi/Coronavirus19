@@ -10,7 +10,10 @@ import numpy as np
 from pandas_ods_reader import read_ods
 import os
 import datetime as dt
-from itertools import cycle
+from multiprocessing import Pool
+from itertools import repeat
+
+import time
 
 
 class Importador_BASEDATOS:
@@ -139,6 +142,33 @@ class Buscayagrega:
 
         print("Base de datos resultado:")
         print(self.dataset.info())
+
+    ##################################################
+    # PARA EL multiprocessing
+    ##################################################
+    def BD_creator(self, archivo, nombreBD=False):
+        print("Leyendo: ", archivo)
+        BD = pd.read_excel(archivo, dtype=str)
+        if nombreBD:
+            BD["NombreBD"] = archivo
+        return BD
+
+    def BD_juntador(self, numero_hilos=2, nombreBD=False):
+        print(dt.datetime.now().strftime("%m-%d %H:%M:%S"), ": ", "Inicio")
+
+        with Pool(numero_hilos) as pool:
+            results = pool.starmap(
+                self.BD_creator, zip(self.archivos_raw, repeat(nombreBD))
+            )
+        self.dataset = pd.concat(results)
+        print("Base de datos resultado:")
+        print(self.dataset.info())
+        print("Tamaño", self.dataset.shape)
+        print(dt.datetime.now().strftime("%m-%d %H:%M:%S"), ": ", "Fin")
+
+    ##################################################3
+    # PARA EL multiprocessing
+    ##################################################
 
     def guardo(self, ruta):
         print("Guardando como:", ruta)
