@@ -15,6 +15,9 @@ CS.arreglo_edad()
 
 # CS.BD.to_excel("Seremi_compilado.xlsx")
 
+
+CS.normalizador_nombresColumnas()
+CS.idPaciente()
 CS.elimino_columnas()
 CS.elimino_columnas2()
 

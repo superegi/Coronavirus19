@@ -181,7 +181,7 @@ class Compilador:
             {
                 "correlativo SEREMI": "ID_SEREMI",
                 "nombrePaciente": "Nombre",
-                "id_paciente": "RUT",
+                "id_paciente": "id_paciente",
                 "edad_paciente": "Edad",
                 "sexo_paciente": "Sexo",
                 "tipo_muestra": "tipoMuestra",

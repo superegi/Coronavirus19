@@ -163,6 +163,19 @@ class Compilador_compiladoSEREMI:
             self.BD.Sexo.str.contains("muj", case=False, na=False), "SEXO"
         ] = "Mujer"
 
+    def normalizador_nombresColumnas(self):
+        normalizacion_cols = dict(
+            {
+                "RUN": "id_paciente",
+                "b": "b",
+                })
+        self.BD = self.BD.rename(columns=normalizacion_cols)
+
+    def idPaciente (self):
+        self.BD.loc[
+            self.BD.Verificador_RUT == 'RUT_OK',
+            'id_paciente'] = self.BD.RUT
+
     def elimino_columnas(self):
         lista = [
             "Fecha de resultado",
@@ -174,7 +187,7 @@ class Compilador_compiladoSEREMI:
         self.BD.drop(lista, axis=1, inplace=True)
 
     def elimino_columnas2(self):
-        lista = ["RUN", "Resultado", "Edad", "Sexo"]
+        lista = [ "Resultado", "Edad", "Sexo"]
         self.BD.drop(lista, axis=1, inplace=True)
         
     def guardo_xls(self, ruta ):

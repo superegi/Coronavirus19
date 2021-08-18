@@ -30,7 +30,16 @@ PNTM_archivos.busqueda_archivos("./PNTM", ".xls")
 # PNTM_archivos.compilador_basedatos(nombreBD=True)
 
 # CON multiprocessing
-PNTM_archivos.BD_juntador(numero_hilos=5, nombreBD=True)
+numero_hilos = 4
+print("#" * 60)
+print("#" * 60)
+print("ESTAS USANDO MULTIHILOS!!!!")
+print("ESTAS USANDO {hilos}".format(hilos=numero_hilos))
+print("#" * 60)
+print("#" * 60)
+
+
+PNTM_archivos.BD_juntador(numero_hilos=numero_hilos, nombreBD=True)
 #############################################################
 #############################################################
 
